@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team - Planning & Priorities</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fa;
+      --surface: #ffffff;
+      --surface-muted: #f6f8fa;
+      --text: #1f2328;
+      --muted: #59636e;
+      --border: #d1d9e0;
+      --border-muted: #e5e9ed;
+      --accent: #0969da;
+      --accent-soft: #ddf4ff;
+      --green: #1a7f37;
+      --green-soft: #dafbe1;
+      --purple: #8250df;
+      --orange: #bc4c00;
+      --shadow: 0 1px 2px rgba(31, 35, 40, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+
+    .svg-defs {
+      position: absolute;
+      width: 0;
+      height: 0;
+      overflow: hidden;
+    }
+
+    .icon {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .project-shell {
+      width: min(1440px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      background: var(--surface);
+      border-inline: 1px solid var(--border-muted);
+      box-shadow: var(--shadow);
+    }
+
+    .project-header { padding: 24px 32px 0; }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-height: 40px;
+    }
+
+    .project-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .project-title > .icon { color: var(--muted); }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 30px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+
+    .header-actions,
+    .project-tabs,
+    .filter-actions,
+    .assignees {
+      display: flex;
+      align-items: center;
+    }
+
+    .header-actions { gap: 8px; }
+
+    .avatar-stack {
+      display: flex;
+      align-items: center;
+      padding-right: 8px;
+    }
+
+    .avatar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      margin-left: -6px;
+      border: 2px solid var(--surface);
+      border-radius: 50%;
+      background: #6e7781;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      user-select: none;
+    }
+
+    .avatar:first-child { margin-left: 0; }
+    .avatar.purple { background: #8250df; }
+    .avatar.blue { background: #0969da; }
+    .avatar.green { background: #1a7f37; }
+    .avatar.orange { background: #bc4c00; }
+    .avatar.pink { background: #bf3989; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 32px;
+      padding: 5px 10px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 120ms ease, border-color 120ms ease;
+    }
+
+    .btn:hover { background: var(--surface-muted); }
+    .btn:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .btn.icon-only { width: 32px; padding: 0; }
+    .btn.bordered { border-color: var(--border); background: var(--surface); }
+
+    .project-tabs {
+      gap: 8px;
+      margin-top: 18px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .project-tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 7px 12px;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      border-radius: 6px 6px 0 0;
+      background: transparent;
+      color: var(--muted);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .tab:hover { background: var(--surface-muted); }
+    .tab.active { color: var(--text); border-bottom-color: #fd8c73; font-weight: 600; }
+    .tab .chevron { width: 12px; height: 12px; margin-left: 4px; }
+
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 10px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+      height: 36px;
+      padding: 0 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--muted);
+    }
+
+    .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12); }
+
+    .search-box input {
+      width: 100%;
+      min-width: 0;
+      height: 100%;
+      padding: 0 8px;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+    }
+
+    .search-box input::placeholder { color: var(--muted); }
+
+    .key-hint {
+      padding: 0 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface-muted);
+      font-size: 12px;
+      line-height: 20px;
+    }
+
+    .filter-actions { gap: 6px; }
+    .result-count { min-width: 20px; text-align: center; color: var(--muted); }
+
+    .project-table { width: 100%; }
+
+    .table-head,
+    .project-row {
+      display: grid;
+      grid-template-columns: minmax(300px, 1fr) 220px 180px;
+      align-items: center;
+      column-gap: 24px;
+      padding-inline: 32px;
+    }
+
+    .table-head {
+      min-height: 40px;
+      background: var(--surface-muted);
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .project-row {
+      min-height: 58px;
+      border-bottom: 1px solid var(--border-muted);
+      transition: background 120ms ease;
+    }
+
+    .project-row:hover { background: #fbfcfd; }
+    .project-row[hidden] { display: none; }
+    .project-table.compact .project-row { min-height: 42px; }
+
+    .project-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .project-name > .icon { color: var(--muted); }
+
+    .project-name a {
+      overflow: hidden;
+      color: var(--text);
+      font-weight: 500;
+      text-decoration: none;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .project-name a:hover { color: var(--accent); text-decoration: underline; }
+    .project-number { color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+    .assignees .avatar { width: 25px; height: 25px; font-size: 10px; }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      width: fit-content;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--surface-muted);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .status::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #6e7781;
+    }
+
+    .status.progress::before { background: var(--purple); }
+    .status.triage::before { background: var(--orange); }
+    .status.ready::before { background: var(--green); }
+    .status.review::before { background: var(--accent); }
+
+    .empty-state {
+      display: none;
+      padding: 56px 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty-state.visible { display: block; }
+
+    @media (max-width: 820px) {
+      .project-header { padding: 18px 18px 0; }
+      .title-row { align-items: flex-start; gap: 12px; }
+      h1 { font-size: 17px; white-space: normal; }
+      .header-actions { flex-wrap: wrap; justify-content: flex-end; }
+      .header-actions .btn span, .avatar-stack { display: none; }
+      .table-head, .project-row { grid-template-columns: minmax(220px, 1fr) 130px; padding-inline: 18px; }
+      .table-head > :last-child, .project-row > :last-child { display: none; }
+    }
+
+    @media (max-width: 560px) {
+      .filter-row { gap: 8px; }
+      .filter-actions .btn:first-of-type, .key-hint { display: none; }
+      .table-head, .project-row { grid-template-columns: 1fr; }
+      .table-head > :nth-child(2), .project-row > :nth-child(2) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <svg class="svg-defs" aria-hidden="true">
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l4-4 3 2 5-6"/></symbol>
+    <symbol id="i-workflow" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8.5 6h7M7.5 8l3.3 7.6M16.5 8l-3.3 7.6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/></symbol>
+    <symbol id="i-view" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M3 9h18"/></symbol>
+    <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-repo" viewBox="0 0 24 24"><path d="M5 3h12a2 2 0 0 1 2 2v16H7a3 3 0 0 1-3-3V4a1 1 0 0 1 1-1Z"/><path d="M4 17a3 3 0 0 1 3-3h12M8 3v7l2-1.5L12 10V3"/></symbol>
+  </svg>
+
+  <main class="project-shell">
+    <header class="project-header">
+      <div class="title-row">
+        <div class="project-title">
+          <svg class="icon"><use href="#i-lock"/></svg>
+          <h1>Team - Planning &amp; Priorities</h1>
+        </div>
+
+        <div class="header-actions">
+          <div class="avatar-stack" aria-label="项目成员">
+            <span class="avatar purple">T</span>
+            <span class="avatar blue">P</span>
+          </div>
+          <button class="btn" type="button"><svg class="icon"><use href="#i-chart"/></svg><span>Insights</span></button>
+          <button class="btn" type="button"><svg class="icon"><use href="#i-workflow"/></svg><span>Workflows</span></button>
+          <button class="btn icon-only" type="button" title="更多操作" aria-label="更多操作"><svg class="icon"><use href="#i-more"/></svg></button>
+          <button class="btn icon-only" type="button" title="侧边栏" aria-label="侧边栏"><svg class="icon"><use href="#i-panel"/></svg></button>
+        </div>
+      </div>
+
+      <nav class="project-tabs" aria-label="项目视图">
+        <button class="tab active" type="button" data-view="initiatives" aria-selected="true">
+          <svg class="icon"><use href="#i-table"/></svg>Initiatives<svg class="icon chevron"><use href="#i-chevron"/></svg>
+        </button>
+        <button class="tab" type="button" data-view="triage" aria-selected="false">
+          <svg class="icon"><use href="#i-table"/></svg>Needs Triage
+        </button>
+        <button class="tab" type="button" data-view="engineering" aria-selected="false">
+          <svg class="icon"><use href="#i-table"/></svg>Engineering
+        </button>
+      </nav>
+
+      <div class="filter-row">
+        <label class="search-box">
+          <svg class="icon"><use href="#i-search"/></svg>
+          <input id="projectSearch" type="search" value="type:initiative is:open" aria-label="筛选项目" autocomplete="off">
+          <span class="key-hint">/</span>
+        </label>
+        <div class="filter-actions">
+          <span class="result-count" id="resultCount">1</span>
+          <button class="btn icon-only" id="clearSearch" type="button" title="清除筛选" aria-label="清除筛选"><svg class="icon"><use href="#i-close"/></svg></button>
+          <button class="btn" id="viewButton" type="button"><svg class="icon"><use href="#i-view"/></svg><span>View</span><svg class="icon chevron"><use href="#i-chevron"/></svg></button>
+        </div>
+      </div>
+    </header>
+
+    <section class="project-table" aria-label="各组项目地址汇总">
+      <div class="table-head"><span>Title</span><span>Assignees</span><span>Status</span></div>
+      <div id="projectRows">
+        <article class="project-row" data-views="initiatives triage">
+          <div class="project-name"><svg class="icon"><use href="#i-repo"/></svg><a href="https://github.com/" target="_blank" rel="noopener">第七组 · 小型加工厂生产流转与追踪系统</a><span class="project-number">#102</span></div>
+          <div class="assignees"><span class="avatar orange">七</span><span class="avatar green">B</span></div>
+          <span class="status triage">Needs Triage</span>
+        </article>
+      </div>
+      <div class="empty-state" id="emptyState">没有符合当前筛选条件的项目</div>
+    </section>
+  </main>
+
+  <script>
+    const searchInput = document.getElementById('projectSearch');
+    const tabs = [...document.querySelectorAll('.tab')];
+    const rows = [...document.querySelectorAll('.project-row')];
+    const resultCount = document.getElementById('resultCount');
+    const emptyState = document.getElementById('emptyState');
+    let currentView = 'initiatives';
+
+    function filterProjects() {
+      const rawQuery = searchInput.value.toLowerCase();
+      const keyword = rawQuery
+        .replace(/type:\S+/g, '')
+        .replace(/is:(open|closed)/g, '')
+        .trim();
+      let visible = 0;
+
+      rows.forEach((row) => {
+        const inView = row.dataset.views.split(' ').includes(currentView);
+        const matchesKeyword = !keyword || row.textContent.toLowerCase().includes(keyword);
+        const show = inView && matchesKeyword;
+        row.hidden = !show;
+        if (show) visible += 1;
+      });
+
+      resultCount.textContent = visible;
+      emptyState.classList.toggle('visible', visible === 0);
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        currentView = tab.dataset.view;
+        tabs.forEach((item) => {
+          const active = item === tab;
+          item.classList.toggle('active', active);
+          item.setAttribute('aria-selected', active);
+        });
+        filterProjects();
+      });
+    });
+
+    searchInput.addEventListener('input', filterProjects);
+    document.getElementById('clearSearch').addEventListener('click', () => {
+      searchInput.value = '';
+      searchInput.focus();
+      filterProjects();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === '/' && document.activeElement !== searchInput) {
+        event.preventDefault();
+        searchInput.focus();
+        searchInput.select();
+      }
+    });
+    document.getElementById('viewButton').addEventListener('click', () => {
+      document.querySelector('.project-table').classList.toggle('compact');
+    });
+
+    filterProjects();
+  </script>
+</body>
+</html>
